@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot name="ugv_bot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:include filename="$(find ugv_description)/urdf/sensors/imu.urdf.xacro" />
+<xacro:include filename="$(find ugv_description)/urdf/sensors/hp60c_camera.urdf.xacro" />
+
+<!-- ======================= ROBOT CONSTANTS ======================= -->
+<xacro:property name="PI" value="3.1415926535897931" />
+
+<!-- Base plate is 250mm x 200mm -->
+<!-- We'll assume the servos are mounted a bit inside the edges -->
+<xacro:property name="wheel_offset_x" value="0.05975" />  <!-- Guess: 80mm from center -->
+<xacro:property name="wheel_offset_y" value="0.108" />  <!-- Guess: 100mm from center -->
+<xacro:property name="wheel_offset_z" value="-0.0185" /> <!-- Guess: 20mm below base_link origin. We will tune this. -->
+  
+  <material name="white">
+    <color rgba="1 1 1 1" />
+  </material>
+
+        
+  <!-- Define the visual components of the IMU assembly -->
+  <link name="imu_link">
+    <visual>
+      <origin xyz="0 0 -0.0141" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://ugv_description/meshes/IMU/visual/Breadboard.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="grey"> <!-- Add a material to give it color -->
+        <color rgba=".4 .4 .4 1"/>
+      </material>
+    </visual>
+    <visual>
+      <!-- Tune this XYZ to place the Arduino on top of the breadboard -->
+      <origin xyz="0.02 -0.01 -0.0045" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://ugv_description/meshes/IMU/visual/BLE33.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="blue"> <!-- Add a material to give it color -->
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+        
+  <!-- ======================= ROBOT BASE ======================= -->
+  <!-- This is a virtual link at the center of the robot on the ground -->
+  <link name="base_footprint"/>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <!-- Place the base_link origin 0.03m (3cm) above the ground. Tune this value. -->
+    <origin xyz="0 0 0.053" rpy="0 0 0" />
+  </joint>
+
+    
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.36874 -0.0047437 0.26806"
+        rpy="0 0 0" />
+      <mass
+        value="6.694" />
+      <inertia
+        ixx="0.11521"
+        ixy="0.0013455"
+        ixz="0.0041749"
+        iyy="0.14404"
+        iyz="0.0027363"
+        izz="0.14178" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/base_link.STL"/>
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/base_link.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="front_right_wheel">
+    <inertial>
+      <origin
+        xyz="0.002094 0.025627 -0.0058788"
+        rpy="0 0 0" />
+      <mass
+        value="5.8353" />
+      <inertia
+        ixx="0.16436"
+        ixy="5.1439E-06"
+        ixz="-8.652E-05"
+        iyy="0.28026"
+        iyz="0.00010784"
+        izz="0.16392" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/right_wheel_front.STL"/>
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/right_wheel_front.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_right_wheel" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="front_left_wheel">
+    <inertial>
+      <origin
+        xyz="0.0051142 -0.025627 -0.0035762"
+        rpy="0 0 0" />
+      <mass
+        value="5.8353" />
+      <inertia
+        ixx="0.16391"
+        ixy="0.00010536"
+        ixz="3.7108E-05"
+        iyy="0.28026"
+        iyz="-2.3603E-05"
+        izz="0.16437" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/Left_wheel_front.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/Left_wheel_front.STL"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_left_wheel" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="back_left_wheel">
+    <inertial>
+      <origin
+        xyz="4.9355E-05 -0.043014 -0.003259"
+        rpy="0 0 0" />
+      <mass
+        value="7.1252" />
+      <inertia
+        ixx="0.18572"
+        ixy="1.2265E-08"
+        ixz="-6.0923E-08"
+        iyy="0.319"
+        iyz="0.0098429"
+        izz="0.18645" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/left_wheel_bACK.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/left_wheel_bACK.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-${wheel_offset_x + 0.0207} ${wheel_offset_y} ${wheel_offset_z}"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_left_wheel" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="back_right_wheel">
+    <inertial>
+      <origin
+        xyz="-9.3176E-05 0.043018 0.0031994"
+        rpy="0 0 0" />
+      <mass
+        value="7.1252" />
+      <inertia
+        ixx="0.18572"
+        ixy="7.2787E-09"
+        ixz="-5.8422E-08"
+        iyy="0.319"
+        iyz="0.0098429"
+        izz="0.18645" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/right_wheel_back.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ugv_description/meshes/ugv_bot/visual/right_wheel_back.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-${wheel_offset_x + 0.0207} -${wheel_offset_y} ${wheel_offset_z}"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_right_wheel" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+
+    <!-- ======================= PAN MECHANISM ======================= -->
+  <link name="pan_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 -${PI/6.59}" />
+      <geometry>
+        <mesh filename="package://ugv_description/meshes/ugv_bot/visual/pan.STL"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://ugv_description/meshes/ugv_bot/visual/pan.STL"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.007155 -0.006896 0.013446" rpy="0 0 0" />
+      <mass value="0.0369" />
+      <inertia ixx="6.2e-06" ixy="-5.47e-07" ixz="-8.58e-08" iyy="6.83e-06" iyz="1.7e-07" izz="1.02e-05" />
+    </inertial>
+  </link>
+
+  <joint name="pan_joint" type="revolute">
+    <origin xyz="0.11287 0.0102 0.09128" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="pan_link"/>
+    <axis xyz="0 0 1" /> 
+    <limit effort="10" velocity="1.0" lower="-1.57" upper="1.57" />
+  </joint>
+
+  <!-- ======================= TILT MECHANISM ======================= -->
+  <link name="tilt_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="-0.09 0.175 -${PI/6.59}" />
+      <geometry>
+        <mesh filename="package://ugv_description/meshes/ugv_bot/visual/tilt.STL" />
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://ugv_description/meshes/ugv_bot/visual/tilt.STL" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.0698 0.0044 0.0095" rpy="0 0 0" />
+      <mass value="0.0519" />
+      <inertia ixx="3.96e-05" ixy="1.42e-05" ixz="-4.3e-07" iyy="1.76e-05" iyz="-2.8e-07" izz="5.05e-05" />
+    </inertial>
+  </link>
+
+  <joint name="tilt_joint" type="revolute">
+    <origin xyz="0 0.022346 0.01497" rpy="0 0 0" />
+    <parent link="pan_link"/>
+    <child link="tilt_link"/>
+    <axis xyz="0 1 0" />
+    <limit effort="10" velocity="1.0" lower="-1.578" upper="0.2546" />
+  </joint>
+
+        
+<!-- ======================= ATTACH SENSORS ======================= -->
+
+  <!-- Call the Camera macro to attach the HP60C sensor frames to the tilt_link -->
+  <xacro:hp60c_camera
+    camera_name="hp60c"
+    parent="tilt_link"
+    xyz_offset="0.077 -0.030 0.00"
+    rpy_offset="0 0 0"
+    color_xyz_offset="0 -0.030 0" 
+    depth_frame_xyz_offset="0 0.030 0"
+  />
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <!-- Set X and Y to 0 to center it. Tune Z for the correct height. -->
+    <origin xyz="0 0 0.0141" rpy="0 0 0" /> 
+</joint>
+
+</robot>

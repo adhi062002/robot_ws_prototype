@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="M_PI" value="3.1415926535897931" />
+
+  <xacro:macro name="hp60c_camera" params="
+    prefix:=''
+    camera_name:='hp60c'
+    parent:='base_link'
+    xyz_offset:='0 0 0'
+    rpy_offset:='0 0 0'
+    color_xyz_offset:='0 0 0'
+    color_rpy_offset:='0 0 0'
+    depth_frame_xyz_offset:='0 0 0'
+    depth_frame_rpy_offset:='0 0 0'
+    optical_xyz_offset:='0 0 0'
+    optical_rpy_offset:='${-M_PI/2} 0 ${-M_PI/2}'
+    mass:=0.072
+    ixx:=0.0001 ixy:=0.0 ixz:=0.0 iyy:=0.0001 iyz:=0.0 izz:=0.0001
+    ">
+
+    <!-- This is the main link for the camera's body/center -->
+    <link name="${camera_name}_link">
+      <inertial>
+        <mass value="${mass}" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="${ixx}" ixy="${ixy}" ixz="${ixz}"
+                 iyy="${iyy}" iyz="${iyz}" izz="${izz}" />
+      </inertial>
+    </link>
+
+    <!-- This joint attaches the camera's body to its parent (e.g., tilt_link) -->
+    <joint name="${prefix}${camera_name}_joint" type="fixed">
+      <parent link="${prefix}${parent}"/>
+      <child link="${prefix}${camera_name}_link" />
+      <origin xyz="${xyz_offset}" rpy="${rpy_offset}"/>
+    </joint>
+
+    <!-- ================== DEPTH SENSOR FRAMES ================== -->
+    <joint name="${prefix}${camera_name}_depth_joint" type="fixed">
+      <origin xyz="${depth_frame_xyz_offset}" rpy="${depth_frame_rpy_offset}"/>
+      <parent link="${prefix}${camera_name}_link"/>
+      <child link="${prefix}${camera_name}_depth_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_depth_frame"/>
+
+    <joint name="${prefix}${camera_name}_depth_optical_joint" type="fixed">
+      <origin xyz="${optical_xyz_offset}" rpy="${optical_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_depth_frame" />
+      <child link="${prefix}${camera_name}_depth_optical_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_depth_optical_frame"/>
+
+    <!-- ================== COLOR SENSOR FRAMES ================== -->
+    <joint name="${prefix}${camera_name}_color_joint" type="fixed">
+      <origin xyz="${color_xyz_offset}" rpy="${color_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_link" />
+      <child link="${prefix}${camera_name}_color_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_color_frame"/>
+
+    <joint name="${prefix}${camera_name}_color_optical_joint" type="fixed">
+      <origin xyz="${optical_xyz_offset}" rpy="${optical_rpy_offset}" />
+      <parent link="${prefix}${camera_name}_color_frame" />
+      <child link="${prefix}${camera_name}_color_optical_frame" />
+    </joint>
+    <link name="${prefix}${camera_name}_color_optical_frame"/>
+
+  </xacro:macro>
+</robot>

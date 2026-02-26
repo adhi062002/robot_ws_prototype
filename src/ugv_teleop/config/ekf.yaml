@@ -1,0 +1,83 @@
+# ================================================================= #
+# === DEFINITIVE EKF CONFIGURATION FOR PROJECT ORION (SYSTEM B) === #
+# ================================================================= #
+#
+# This file fuses three sensor sources for robust state estimation on
+# the encoder-less, Mecanum-wheeled UGV.
+#
+# 1. VIO (/vio/odom): High-accuracy, low-drift POSE. Prone to failure.
+# 2. Wheel Odom (/odom/wheel): Low-accuracy, high-drift VELOCITY from kinematics. Always available.
+# 3. IMU (/imu/data): High-frequency, stable orientation (Pitch/Roll) and angular velocity.
+#
+ekf_filter_node:
+  ros__parameters:
+
+    # ----- 1. CORE FILTER PARAMETERS -----
+    frequency: 30.0                   # The filter's update rate in Hz.
+    two_d_mode: false                  # CRITICAL: We are constraining the filter to the X, Y, Yaw plane.
+    publish_tf: true                  # CRITICAL: The EKF is the SOLE authority for the odom->base_foorprint transform.
+    
+    # ----- 2. FRAME & TOPIC PARAMETERS -----
+    map_frame: map                    # The final, non-moving world frame (published by RTAB-Map).
+    odom_frame: odom                  # We will publish to the standard 'odom' frame name.
+    base_link_frame: base_footprint        # The robot's root frame, as defined in the URDF.
+    world_frame: odom                 # Specifies that this EKF instance provides the odom->base_footprint transform.
+
+    # ----- 3. SENSOR INPUT CONFIGURATION -----
+
+    # --- SENSOR 0: Visual-Inertial Odometry (VIO) ---
+    # Our primary anchor. We trust its absolute position and heading.
+    odom0: /vio/odom
+    odom0_config: [true,  true,  true,    # Fuse X and Y Position
+                   true, true, true,     # Fuse Yaw Orientation
+                   false, false, false,    # Do NOT fuse velocities (to avoid double-counting info)
+                   false, false, false,
+                   false, false, false]
+    odom0_differential: false             # 'false' means this sensor provides absolute pose in the odom frame.
+    odom0_queue_size: 10
+
+    # --- SENSOR 1: Command-Based Wheel Odometry ---
+    # Our continuous fallback. We ONLY trust its velocity estimates.
+    # Assumes your forward_kinematics_node publishes to /odom/wheel
+    odom1: /odom/wheel
+    odom1_config: [false, false, false,
+                   false, false, false,
+                   true,  true,  false,    # Fuse VX and VY (forward/strafe) Velocity
+                   false, false, true,     # Fuse V-Yaw (turning) Velocity
+                   false, false, false]
+    odom1_differential: false             # Even though it has a pose, we ignore it via the config matrix above.
+    odom1_queue_size: 10
+    
+    # --- SENSOR 2: IMU ---
+    # Our high-frequency stabilizer. In 2D mode, we only care about Yaw velocity and X acceleration.
+    # Assumes your imu_filter_madgwick_node publishes to /imu/data
+    imu0: /imu/data
+    imu0_config: [false, false, false,
+                  true, true, true,    # In 2D mode, Pitch and Roll from the IMU are ignored anyway.
+                  false, false, false,
+                  true, true, true,     # We will fuse the Gyroscope's Yaw Velocity.
+                  true,  true, false]     # We will fuse the Accelerometer's X acceleration.
+    imu0_differential: false
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: true # Important!
+
+    # ----- 4. PROCESS NOISE COVARIANCE (CRITICAL TUNING) -----
+    # Tells the filter how much to trust its own motion model vs. the sensors.
+    # These are INCREASED values for the real UGV with noisy command-based odom.
+    process_noise_covariance: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.06, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               # VX, VY have higher noise
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.0,
+                               # V-Yaw has higher noise
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0,
+                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.015]

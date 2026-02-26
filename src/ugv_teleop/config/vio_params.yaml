@@ -1,0 +1,15 @@
+rgbd_odometry:
+  ros__parameters:
+    frame_id: "base_footprint"
+    odom_frame_id: "odom_vio"
+    publish_tf: true
+    approx_sync: true
+    Vis/ImuAsInput: true
+    Odom/Strategy: "0"
+    Vis/MaxFeatures: "1500"
+    Vis/MinInliers: "20"
+    OdomF2M/MaxSize: "3000"
+    Odom/ResetCountdown: "5"
+    Odom/Holonomic: "True"
+    Reg/Force3DoF: "True"
+

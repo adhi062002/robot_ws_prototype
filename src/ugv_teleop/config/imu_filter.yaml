@@ -1,0 +1,11 @@
+imu_filter:
+  ros__parameters:
+    use_mag: false
+    publish_tf: false
+    world_frame: "enu"
+    gain: 0.1
+
+    # Optional biases
+    gyro_bias_x: -0.035867
+    gyro_bias_y: 0.019349
+    gyro_bias_z: -0.014234
