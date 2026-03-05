@@ -7,6 +7,8 @@ from geometry_msgs.msg import TransformStamped, Quaternion
 from tf2_ros import TransformBroadcaster
 from sensor_msgs.msg import JointState
 import math
+from ugv_hardware.drive_models.meccanum_drive import MecanumDrive
+from ugv_hardware.drive_models.differential_drive import DifferentialDrive
 
 class ForwardKinematicsNode(Node):
     def __init__(self):
@@ -15,20 +17,37 @@ class ForwardKinematicsNode(Node):
         # --- Parameters ---
         self.declare_parameter('publish_tf', False)
         self.declare_parameter('max_wheel_speed_rad_s', 7.15) # The single value to tune
+        self.declare_parameter('drive_model', 'mecanum')
+        self.declare_parameter('wheel_base' , 0.328 )
         self.declare_parameter('linear_scale_factor', 1.118)  
         self.declare_parameter('strafe_scale_factor', 0.48)
+        self.wheel_base = self.get_parameter('wheel_base').value
         self.publish_tf = self.get_parameter('publish_tf').get_parameter_value().bool_value
         self.MAX_WHEEL_SPEED_RAD_S = self.get_parameter('max_wheel_speed_rad_s').get_parameter_value().double_value
         self.linear_scale = self.get_parameter('linear_scale_factor').get_parameter_value().double_value
         self.strafe_scale = self.get_parameter('strafe_scale_factor').get_parameter_value().double_value     
         self.get_logger().info(f'Publish TF: {self.publish_tf}')
-        self.get_logger().info(f'Max_wheel_speed_rad_s: {self.MAX_WHEEL_SPEED_RAD_S}')
-
+        self.get_logger().info(f'Max_wheel_speed_rad_s: {self.MAX_WHEEL_SPEED_RAD_S}')  
+        
+        # ----selecting drive model-----    
+        drive_model = self.get_parameter('drive_model').get_parameter_value().string_value
+        
         # --- Constants & Calibrated Parameters ---
         self.WHEEL_RADIUS = 0.040; self.L = 0.108; self.W = 0.08045
         self.neutral_us = [1491.0, 1498.0, 1492.0, 1488.0]
         self.max_pwm_delta = 500.0
         
+        if drive_model == "mecanum":
+            self.get_logger().info("Drive model: MECANUM")
+            self.drive = MecanumDrive(self.WHEEL_RADIUS, self.L, self.W)
+
+        elif drive_model == "differential":
+            self.get_logger().info("Drive model: DIFFERENTIAL")
+            self.drive = DifferentialDrive(self.wheel_base, self.WHEEL_RADIUS)
+
+        else:
+            raise ValueError("Unknown drive model")
+            
         # Pan/Tilt calibration
         self.PAN_CMD_MIN_DEG, self.PAN_CMD_MAX_DEG = 0.0, 180.0
         self.TILT_CMD_MIN_DEG, self.TILT_CMD_MAX_DEG = 0.0, 105.0
@@ -84,16 +103,35 @@ class ForwardKinematicsNode(Node):
         else:
             self.w_fl, self.w_fr, self.w_bl, self.w_br = 0.0, 0.0, 0.0, 0.0
 
-        kinematic_w_fl, kinematic_w_fr = self.w_fl, -self.w_fr
-        kinematic_w_bl, kinematic_w_br = self.w_bl, -self.w_br
-        
-        r, l_plus_w = self.WHEEL_RADIUS, self.L + self.W
-        self.vx  = (kinematic_w_fl + kinematic_w_fr + kinematic_w_bl + kinematic_w_br) * (r / 4)
-        self.vy  = (-kinematic_w_fl + kinematic_w_fr + kinematic_w_bl - kinematic_w_br) * (r / 4)
-        self.vth = (-kinematic_w_fl + kinematic_w_fr - kinematic_w_bl + kinematic_w_br) * (r / (4 * l_plus_w))
+      
+        if isinstance(self.drive, MecanumDrive):
 
+           kinematic_w_fl = self.w_fl
+           kinematic_w_fr = -self.w_fr
+           kinematic_w_bl = self.w_bl
+           kinematic_w_br = -self.w_br
+
+           self.vx, self.vy, self.vth = self.drive.forward(
+           kinematic_w_fl,
+           kinematic_w_fr,
+           kinematic_w_bl,
+           kinematic_w_br
+    )
+
+        elif isinstance(self.drive, DifferentialDrive):
+
+              v_left  = (self.w_fl + self.w_bl) / 2.0
+              v_right = (self.w_fr + self.w_br) / 2.0
+
+              self.vx, self.vy, self.vth = self.drive.forward(v_left, v_right)
+             
         self.vx *= self.linear_scale
-        self.vy *= self.linear_scale
+
+        if isinstance(self.drive, MecanumDrive):
+         self.vy *= self.strafe_scale
+        else:
+          self.vy = 0.0
+         
     def publish_loop(self):
         current_time = self.get_clock().now()
         if self.last_publish_time is None:

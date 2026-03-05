@@ -1,18 +1,15 @@
 from .base_drive import BaseDrive
 
-
 class DifferentialDrive(BaseDrive):
-    def __init__(self, wheel_base):
-        self.wheel_base = wheel_base
 
-    def compute_wheel_speeds(self, vx, vy, omega):
-        # vy ignored in differential drive
-        v_left = vx - (omega * self.wheel_base / 2.0)
-        v_right = vx + (omega * self.wheel_base / 2.0)
+    def __init__(self, wheel_base, wheel_radius):
+        self.L = wheel_base
+        self.r = wheel_radius
 
-        return {
-            "front_left": v_left,
-            "rear_left": v_left,
-            "front_right": v_right,
-            "rear_right": v_right
-        }
+    def forward(self, w_left, w_right):
+
+        vx = self.r * (w_left + w_right) / 2.0
+        vth = self.r * (w_right - w_left) / self.L
+        vy = 0.0
+
+        return vx, vy, vth
