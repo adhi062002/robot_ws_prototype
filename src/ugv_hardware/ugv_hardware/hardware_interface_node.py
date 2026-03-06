@@ -137,10 +137,18 @@ class MotorControlNode(Node):
         if self.arduino is not None:
             values = msg.data
             if len(values) == 6:
+                left  = int((values[0] + values[2]) / 2)
+                right = int((values[1] + values[3]) / 2)
+
                 command = (
-                    f"FL:{values[0]} FR:{values[1]} BL:{values[2]} BR:{values[3]} "
+                    f"LEFT:{left} RIGHT:{right} "
                     f"servo1:{values[4]} servo2:{values[5]}\n"
                 )
+              ##old code 
+              #  command = (
+              #      f"FL:{values[0]} FR:{values[1]} BL:{values[2]} BR:{values[3]} "
+              #      f"servo1:{values[4]} servo2:{values[5]}\n"
+              #  )
                 self.arduino.write(command.encode())
                 self.get_logger().info(f"Sent to Teensy: {command.strip()}")
             else:
