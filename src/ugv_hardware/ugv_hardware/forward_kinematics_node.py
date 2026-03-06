@@ -103,34 +103,35 @@ class ForwardKinematicsNode(Node):
         else:
             self.w_fl, self.w_fr, self.w_bl, self.w_br = 0.0, 0.0, 0.0, 0.0
 
-      
+        kinematic_w_fl = self.w_fl
+        kinematic_w_fr = -self.w_fr
+        kinematic_w_bl = self.w_bl
+        kinematic_w_br = -self.w_br
+        
         if isinstance(self.drive, MecanumDrive):
-
-           kinematic_w_fl = self.w_fl
-           kinematic_w_fr = -self.w_fr
-           kinematic_w_bl = self.w_bl
-           kinematic_w_br = -self.w_br
-
-           self.vx, self.vy, self.vth = self.drive.forward(
-           kinematic_w_fl,
-           kinematic_w_fr,
-           kinematic_w_bl,
-           kinematic_w_br
-    )
+       
+            self.vx, self.vy, self.vth = self.drive.forward(
+            kinematic_w_fl,
+            kinematic_w_fr,
+            kinematic_w_bl,
+            kinematic_w_br
+          )
 
         elif isinstance(self.drive, DifferentialDrive):
 
-              v_left  = (self.w_fl + self.w_bl) / 2.0
-              v_right = (self.w_fr + self.w_br) / 2.0
+            v_left  = (self.w_fl + self.w_bl) / 2.0
+            v_right = (self.w_fr + self.w_br) / 2.0
 
-              self.vx, self.vy, self.vth = self.drive.forward(v_left, v_right)
+            self.vx, self.vy, self.vth = self.drive.forward(v_left, v_right)
+        
+        #Apply scale
              
         self.vx *= self.linear_scale
 
         if isinstance(self.drive, MecanumDrive):
-         self.vy *= self.strafe_scale
+            self.vy *= self.strafe_scale
         else:
-          self.vy = 0.0
+            self.vy = 0.0
          
     def publish_loop(self):
         current_time = self.get_clock().now()
