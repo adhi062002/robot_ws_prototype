@@ -21,7 +21,7 @@ class MotorControlNode(Node):
 
         self.subscription = self.create_subscription(
             Int32MultiArray,
-            'servo_pwm_us',  # Topic that sends 6 microsecond values
+            'cmd_drive',  # Topic that sends 6 microsecond values
             self.pwm_callback,
             10
         )
@@ -136,13 +136,13 @@ class MotorControlNode(Node):
         self.get_logger().info(f"Callback received: {msg.data}")   
         if self.arduino is not None:
             values = msg.data
-            if len(values) == 6:
-                left  = int((values[0] + values[2]) / 2)
-                right = int((values[1] + values[3]) / 2)
+            if len(values) == 2:
+                left  = int(values[0])
+                right = int(values[1])
 
                 command = (
-                    f"LEFT:{left} RIGHT:{right} "
-                    f"servo1:{values[4]} servo2:{values[5]}\n"
+                    f"LEFT:{left} RIGHT:{right}\n "
+                 #   f"servo1:{values[4]} servo2:{values[5]}\n"
                 )
               ##old code 
               #  command = (
@@ -152,7 +152,7 @@ class MotorControlNode(Node):
                 self.arduino.write(command.encode())
                 self.get_logger().info(f"Sent to Teensy: {command.strip()}")
             else:
-                self.get_logger().warn("Expected 6 values (4 continuous servos + 2 positional servos in µs)")
+                self.get_logger().warn("Expected 2 values (LEFT, RIGHT)")
         else:
             self.get_logger().warn("Teensy not connected. Skipping command.")
             

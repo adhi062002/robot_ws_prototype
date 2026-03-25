@@ -41,7 +41,8 @@ setup(
             'odom_pub = ugv_teleop.vio_odom_pub:main',
             'odom_cmp = ugv_teleop.prototype:main',
             'compress = ugv_teleop.compression_node:main',
-            'dist = ugv_teleop.distance_calculator:main'
+            'dist = ugv_teleop.distance_calculator:main',
+            'dc_motor = ugv_teleop.dc_motor_teleop:main'
         ],
     },
 )
