@@ -141,8 +141,11 @@ class MotorControlNode(Node):
                 right = int(values[1])
 
                 command = (
+
                     f"LEFT:{left} RIGHT:{right}\n "
                  #   f"servo1:{values[4]} servo2:{values[5]}\n"
+                  #  f"LEFT:{left} RIGHT:{right} "
+                  #  f"servo1:{values[4]} servo2:{values[5]}\n"
                 )
               ##old code 
               #  command = (
@@ -152,7 +155,11 @@ class MotorControlNode(Node):
                 self.arduino.write(command.encode())
                 self.get_logger().info(f"Sent to Teensy: {command.strip()}")
             else:
+
                 self.get_logger().warn("Expected 2 values (LEFT, RIGHT)")
+
+              #  self.get_logger().warn("Expected 2 values Left & Right")
+
         else:
             self.get_logger().warn("Teensy not connected. Skipping command.")
             
