@@ -142,7 +142,7 @@ class MotorControlNode(Node):
 
                 command = (
 
-                    f"LEFT:{left} RIGHT:{right}\n "
+                    f"LEFT:{left} RIGHT:{right}"
                  #   f"servo1:{values[4]} servo2:{values[5]}\n"
                   #  f"LEFT:{left} RIGHT:{right} "
                   #  f"servo1:{values[4]} servo2:{values[5]}\n"
