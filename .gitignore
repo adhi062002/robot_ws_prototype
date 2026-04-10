@@ -4,3 +4,6 @@ log/
 .vscode/
 *.pyc
 __pycache__/
+*.pdf
+*.gv
+src/ydlidar_ros2_driver/
