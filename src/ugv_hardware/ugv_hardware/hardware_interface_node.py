@@ -101,7 +101,7 @@ class MotorControlNode(Node):
                 except Exception as e:
                     self.get_logger().error(f"Error in serial read loop: {e}")
 
-            import time
+            #import time
             time.sleep(0.001) 
 
     def publish_imu_from_binary(self, data_tuple):
@@ -136,14 +136,20 @@ class MotorControlNode(Node):
         self.get_logger().info(f"Callback received: {msg.data}")   
         if self.arduino is not None:
             values = msg.data
-            if len(values) == 2:
+            if len(values) != 4:
+                self.get_logger().error(f"INVALID data length: {len(values)}")
+                return
+            
+            try: 
                 left  = int(values[0])
                 right = int(values[1])
+                servo1 =int(values[2])
+                servo2 = int(values[3])
 
                 command = (
 
-                    f"LEFT:{left} RIGHT:{right}"
-                 #   f"servo1:{values[4]} servo2:{values[5]}\n"
+                    f"LEFT:{left} RIGHT:{right} "
+                    f"servo1:{servo1} servo2:{servo2}\n"
                   #  f"LEFT:{left} RIGHT:{right} "
                   #  f"servo1:{values[4]} servo2:{values[5]}\n"
                 )
@@ -154,9 +160,9 @@ class MotorControlNode(Node):
               #  )
                 self.arduino.write(command.encode())
                 self.get_logger().info(f"Sent to Teensy: {command.strip()}")
-            else:
 
-                self.get_logger().warn("Expected 2 values (LEFT, RIGHT)")
+            except Exception as e:
+                self.get_logger().error(f"Processing error: {e}")
 
               #  self.get_logger().warn("Expected 2 values Left & Right")
 
@@ -170,6 +176,8 @@ class MotorControlNode(Node):
         if hasattr(self, 'read_thread') and self.read_thread.is_alive():
             self.read_thread.join(timeout=1) # Wait for the thread to exit
         if self.arduino and self.arduino.is_open:
+            stop_cmd = "LEFT:0 RIGHT:0 servo1:90 servo2:90\n"
+            self.arduino.write(stop_cmd.encode())
             self.arduino.close()
         super().destroy_node()            
 
