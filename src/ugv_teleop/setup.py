@@ -41,7 +41,7 @@ setup(
             #'vins_logger = ugv_teleop.vins_logger_node:main',
             #'odom_pub = ugv_teleop.vio_odom_pub:main',
             #'odom_cmp = ugv_teleop.prototype:main',
-            #'compress = ugv_teleop.compression_node:main',
+            'compress = ugv_teleop.compression_node:main',
             #'dist = ugv_teleop.distance_calculator:main',
             'dc_motor = ugv_teleop.dc_motor_teleop:main',
             'dc_control = ugv_teleop.robot_control:main',
