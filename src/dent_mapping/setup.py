@@ -25,7 +25,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'dent_mapping_node = dent_mapping.dent_mapping_node:main',
+            'capture_node = dent_mapping.realsense_frame_capture_node:main',
         ],
     },
 )
