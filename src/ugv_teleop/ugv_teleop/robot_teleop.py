@@ -11,7 +11,7 @@ class Teleop(Node):
         self.speed = 600  # max 1000
 
         # ✅ Positional servos (Tilt, Pan)
-        self.tilt = 90
+        self.tilt = 00
         self.pan = 90
 
         self.settings = termios.tcgetattr(sys.stdin)
