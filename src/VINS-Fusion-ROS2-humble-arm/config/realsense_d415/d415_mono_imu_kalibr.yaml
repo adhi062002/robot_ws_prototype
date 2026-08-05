@@ -1,0 +1,66 @@
+%YAML:1.0
+
+imu: 1
+num_of_cam: 1
+
+imu_topic: "/imu/data_raw"
+image0_topic: "/camera/camera/color/image_raw"
+image1_topic: "/cam1/image_raw"
+# imu_topic: "/out/imu"
+# image0_topic: "/out/rgb"
+# image1_topic: "/cam1/image_raw"
+output_path: "/home/nvidia/output_vins"
+
+cam0_calib: "cam0_pinhole_kalibr.yaml"
+cam1_calib: "cam1_mei.yaml"
+image_width: 1280
+image_height: 720
+
+# Extrinsic parameter between IMU and Camera.
+estimate_extrinsic: 1
+
+body_T_cam0: !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+#   data: [ -0.02156, -0.2578,  0.9659,   0.0790355,
+#               -0.9948,   0.10137,  0.0048515, 0.031389,
+#               -0.09917, -0.96,    -0.25868,  0.01408,
+#                0.0,      0.0,     0.0,       1.0 ]
+   data: [-0.9659,    -0.2578,    -0.02156,    0.0790355,
+          -0.0048515,  0.10137,   -0.9948,     0.031389,
+          0.25868,   -0.96,      -0.09917,    0.01408,
+          0.0,         0.0,         0.0,         1.0]
+
+
+#Multiple thread support
+multiple_thread: 6
+
+#feature tracker parameters
+max_cnt: 310 #220
+min_dist: 13 #15
+freq: 20 #20
+F_threshold: 1.0
+show_track: 1
+flow_back: 1
+
+estimate_td: 1
+td: 0.0 #-0.0766 
+
+#optimization parameters
+max_solver_time: 0.095
+max_num_iterations: 13 #12
+keyframe_parallax: 9.5 #10
+
+#imu parameters
+acc_n: 0.4 #0.4
+gyr_n: 0.06 #0.06
+acc_w: 0.009 #0.0075
+gyr_w: 0.0009 #0.00045
+g_norm: 9.81007
+
+#loop closure parameters
+load_previous_pose_graph: 1
+pose_graph_save_path: "/home/nvidia/output_vins/"
+save_image: 1
+save_pose: 1
