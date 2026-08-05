@@ -1,0 +1,10 @@
+uint8 MANUAL=0
+uint8 EVERY_5TH_FRAME=1
+uint8 mode
+---
+bool success
+string run_dir
+uint32 frames_captured
+---
+uint32 frames_captured
+string state

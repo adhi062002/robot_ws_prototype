@@ -1,0 +1,14 @@
+string input_dir
+string output_dir
+float32 confidence
+---
+bool success
+string output_dir
+uint32 frames_processed
+uint32 detections_found
+string message
+---
+string stage
+float32 progress
+uint32 frames_processed
+uint32 total_frames

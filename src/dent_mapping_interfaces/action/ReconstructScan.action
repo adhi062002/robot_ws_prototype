@@ -1,0 +1,11 @@
+string input_dir
+string dent_dir
+string output_dir
+---
+bool success
+string output_dir
+string ply_path
+string message
+---
+string stage
+float32 progress

@@ -2,35 +2,25 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>dent_mapping</name>
-  <version>1.0.0</version>
-  <description>
-    ROS2 Humble dent-mapping pipeline using SuperGlue feature matching,
-    TEASER++ robust registration, and Colored ICP refinement.
-    Designed for the Intel RealSense D415.
-  </description>
-  <maintainer email="your@email.com">your_name</maintainer>
-  <license>MIT</license>
+  <version>0.1.0</version>
+  <description>RealSense capture, registration, and dent-mapping ROS 2 nodes.</description>
+  <maintainer email="adithya@example.com">Adithya</maintainer>
+  <license>Apache-2.0</license>
 
   <buildtool_depend>ament_python</buildtool_depend>
 
-  <!-- ROS2 core -->
   <depend>rclpy</depend>
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>tf2_ros</depend>
-  <depend>cv_bridge</depend>
   <depend>message_filters</depend>
-  <depend>sensor_msgs_py</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>dent_mapping_interfaces</depend>
 
-  <!-- Python deps (installed via pip/conda, not rosdep) -->
-  <!-- open3d, torch, teaserpp_python, opencv-python, numpy, scipy -->
-
-  <test_depend>ament_pytest</test_depend>
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <build_type>ament_python</build_type>
   </export>
 </package>
-
-
