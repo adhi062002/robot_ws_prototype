@@ -8,3 +8,4 @@ __pycache__/
 *.gv
 src/ydlidar_ros2_driver/
 *.obj
+*.zip
