@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': ['hardware_interface=ugv_hardware.hardware_interface_node:main',
                             'forward_kinematics=ugv_hardware.forward_kinematics_node:main',
+'compress=ugv_hardware.image_compressor:main',                            
         ],
     },
 )
